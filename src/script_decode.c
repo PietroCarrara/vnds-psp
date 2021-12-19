@@ -16,12 +16,31 @@ void freeStack(IfArgs **ifStack, int size) {
   int i = 0;
   for (i = 0; i < size; i++) {
     Instruction it = {
-      .type = InstructionIf,
-      .args = ifStack[i],
+        .type = InstructionIf,
+        .args = ifStack[i],
     };
     instructionDestroy(it);
   }
   free(ifStack);
+}
+
+// Skip reading the BOM from a file
+// https://en.wikipedia.org/wiki/Byte_order_mark
+void removeBOM(FILE *f) {
+  int a, b, c;
+  a = getc(f);
+  if (a == 0xef) {
+    b = getc(f);
+    if (b == 0xbb) {
+      c = getc(f);
+      if (c == 0xbf) {
+        return;
+      }
+      ungetc(c, f);
+    }
+    ungetc(b, f);
+  }
+  ungetc(a, f);
 }
 
 char *readScript(FILE *f, Script *s) {
@@ -33,9 +52,10 @@ char *readScript(FILE *f, Script *s) {
   s->labels = HashTableCreate();
 
   // TODO: free
-  IfArgs **ifStack = NULL; // Array of IfArgs pointers
+  IfArgs **ifStack = NULL;  // Array of IfArgs pointers
   int ifStackSize = 0;
 
+  removeBOM(f);
   while (!feof(f)) {
     char *word = nextWord(f);
 
@@ -169,17 +189,17 @@ char *readScript(FILE *f, Script *s) {
       args->right = nextWord(f);
 
       ifStackSize++;
-      ifStack = realloc(ifStack, ifStackSize * sizeof(IfArgs*));
-      ifStack[ifStackSize-1] = args;
+      ifStack = realloc(ifStack, ifStackSize * sizeof(IfArgs *));
+      ifStack[ifStackSize - 1] = args;
 
       instr.type = InstructionIf;
       instr.args = args;
     } else if (strcmp(word, "fi") == 0) {
       // Close the last if, pop it from the stack
       insertInstr = 0;
-      ifStack[ifStackSize-1]->falseGoto = s->instructionsCount;
+      ifStack[ifStackSize - 1]->falseGoto = s->instructionsCount;
       ifStackSize--;
-      ifStack = realloc(ifStack, ifStackSize * sizeof(IfArgs*));
+      ifStack = realloc(ifStack, ifStackSize * sizeof(IfArgs *));
     } else if (strcmp(word, "jump") == 0) {
       JumpArgs *args = malloc(sizeof(JumpArgs));
       args->filename = nextWord(f);
@@ -201,7 +221,7 @@ char *readScript(FILE *f, Script *s) {
       HashTableSet(s->labels, label, index);
       free(label);
 
-    // TODO: random
+      // TODO: random
     } else if (strcmp(word, "goto") == 0) {
       GotoArgs *args = malloc(sizeof(GotoArgs));
       args->label = nextWord(f);
@@ -209,7 +229,8 @@ char *readScript(FILE *f, Script *s) {
       instr.args = args;
     } else {
       char error[255];
-      snprintf(error, sizeof(error), "unknown instruction: \"%s\"", word);
+      snprintf(error, sizeof(error), "%d unknown instruction: \"%s\"", line,
+               word);
       freeStack(ifStack, ifStackSize);
       free(word);
       return strdup(error);
@@ -221,7 +242,8 @@ char *readScript(FILE *f, Script *s) {
       s->instructionsCount++;
       if (s->instructionsCount >= allocated) {
         allocated *= 2;
-        s->instructions = realloc(s->instructions, sizeof(Instruction) * allocated);
+        s->instructions =
+            realloc(s->instructions, sizeof(Instruction) * allocated);
       }
     }
 
