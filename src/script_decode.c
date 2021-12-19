@@ -12,6 +12,18 @@ void skipSpaces(FILE *f);
 int nextLine(FILE *f);
 void skipLine(FILE *f);
 
+void freeStack(IfArgs **ifStack, int size) {
+  int i = 0;
+  for (i = 0; i < size; i++) {
+    Instruction it = {
+      .type = InstructionIf,
+      .args = ifStack[i],
+    };
+    instructionDestroy(it);
+  }
+  free(ifStack);
+}
+
 char *readScript(FILE *f, Script *s) {
   int line = 1;
   int allocated = 64;
@@ -111,6 +123,7 @@ char *readScript(FILE *f, Script *s) {
       } else {
         char error[255];
         snprintf(error, sizeof(error), "unknown operation: \"%s\"", op);
+        freeStack(ifStack, ifStackSize);
         free(word);
         free(op);
         free(args->variable);
@@ -144,6 +157,7 @@ char *readScript(FILE *f, Script *s) {
       } else {
         char error[255];
         snprintf(error, sizeof(error), "unknown operation: \"%s\"", op);
+        freeStack(ifStack, ifStackSize);
         free(word);
         free(op);
         free(args->variable);
@@ -196,6 +210,7 @@ char *readScript(FILE *f, Script *s) {
     } else {
       char error[255];
       snprintf(error, sizeof(error), "unknown instruction: \"%s\"", word);
+      freeStack(ifStack, ifStackSize);
       free(word);
       return strdup(error);
     }
@@ -224,6 +239,7 @@ char *readScript(FILE *f, Script *s) {
     }
   }
 
+  freeStack(ifStack, ifStackSize);
   s->instructions =
       realloc(s->instructions, sizeof(Instruction) * s->instructionsCount);
   return NULL;
