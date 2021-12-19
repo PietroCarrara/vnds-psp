@@ -186,6 +186,8 @@ char *readScript(FILE *f, Script *s) {
       *index = s->instructionsCount;
       HashTableSet(s->labels, label, index);
       free(label);
+
+    // TODO: random
     } else if (strcmp(word, "goto") == 0) {
       GotoArgs *args = malloc(sizeof(GotoArgs));
       args->label = nextWord(f);
@@ -236,7 +238,6 @@ void skipSpaces(FILE *f) {
 }
 
 char *nextWord(FILE *f) {
-  int i = 0;
   int strLen = 0;
   int allocated = 16;
   char *str = malloc(allocated);
@@ -268,7 +269,6 @@ char *nextWord(FILE *f) {
 }
 
 char *readLine(FILE *f) {
-  int i = 0;
   int strLen = 0;
   int allocated = 16;
   char *str = malloc(allocated);

@@ -102,4 +102,7 @@ typedef struct {
 
 char *instructionToString(Instruction);
 
+// Frees resources used by the instruction
+void instructionDestroy(Instruction);
+
 #endif

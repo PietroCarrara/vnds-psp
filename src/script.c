@@ -7,6 +7,19 @@
 #include "string.h"
 #include "utils/ht.h"
 
+void scriptDestroy(Script s) {
+  int i;
+  for (i = 0; i < s.instructionsCount; i++) {
+    instructionDestroy(s.instructions[i]);
+  }
+  free(s.instructions);
+  HashTableIt it = HashTableIterator(s.labels);
+  while (HashTableNext(&it)) {
+    free(it.value);
+  }
+  HashTableDestroy(s.labels);
+}
+
 char *executeGoto(Script *s, Context *c, Context *gc, GotoArgs *args) {
   char error[255] = {0};
 

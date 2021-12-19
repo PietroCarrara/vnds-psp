@@ -1,6 +1,7 @@
 #include "instruction.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "string.h"
 
@@ -40,6 +41,7 @@ char *testOperationToString(TestOperation op) {
 char *instructionToString(Instruction i) {
   char buf[1024];
   BGLoadArgs *bgLoadArgs;
+  SetIMGArgs *setIMGArgs;
   SoundArgs *soundArgs;
   MusicArgs *musicArgs;
   SetVarArgs *setVarArgs;
@@ -56,6 +58,10 @@ char *instructionToString(Instruction i) {
       bgLoadArgs = i.args;
       snprintf(buf, sizeof(buf), "bgload %s %d", bgLoadArgs->filename,
                bgLoadArgs->fadein);
+      break;
+    case InstructionSetIMG:
+      setIMGArgs = i.args;
+      snprintf(buf, sizeof(buf), "setimg %s %d %d", setIMGArgs->filename, setIMGArgs->x, setIMGArgs->y);
       break;
     case InstructionSound:
       soundArgs = i.args;
@@ -109,4 +115,71 @@ char *instructionToString(Instruction i) {
   }
 
   return strdup(buf);
+}
+
+void instructionDestroy(Instruction i) {
+  BGLoadArgs *bgLoadArgs;
+  SetIMGArgs *setIMGArgs;
+  SoundArgs *soundArgs;
+  MusicArgs *musicArgs;
+  SetVarArgs *setVarArgs;
+  IfArgs *ifArgs;
+  JumpArgs *jumpArgs;
+  TextArgs *textArgs;
+  ChoiceArgs *choiceArgs;
+  GotoArgs *gotoArgs;
+
+  switch (i.type) {
+    case InstructionBGLoad:
+      bgLoadArgs = i.args;
+      free(bgLoadArgs->filename);
+      break;
+    case InstructionSetIMG:
+      setIMGArgs = i.args;
+      free(setIMGArgs->filename);
+      break;
+    case InstructionSound:
+      soundArgs = i.args;
+      free(soundArgs->filename);
+      break;
+    case InstructionMusic:
+      musicArgs = i.args;
+      free(musicArgs->filename);
+      break;
+    case InstructionText:
+      textArgs = i.args;
+      free(textArgs->text);
+      break;
+    case InstructionSetVar:
+    case InstructionGSetVar:
+      setVarArgs = i.args;
+      free(setVarArgs->variable);
+      free(setVarArgs->value);
+      break;
+    case InstructionIf:
+      ifArgs = i.args;
+      free(ifArgs->variable);
+      free(ifArgs->right);
+      break;
+    case InstructionJump:
+      jumpArgs = i.args;
+      free(jumpArgs->filename);
+      free(jumpArgs->label);
+      break;
+    case InstructionClearText:
+      break;
+    case InstructionDelay:
+      break;
+    case InstructionChoice:
+      choiceArgs = i.args;
+      free(choiceArgs->choices);
+      break;
+    case InstructionGoto:
+      gotoArgs = i.args;
+      free(gotoArgs->label);
+      break;
+    // TODO: Random
+  }
+
+  free(i.args);
 }

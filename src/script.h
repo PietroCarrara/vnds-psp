@@ -14,6 +14,9 @@ typedef struct Script {
   HashTable* labels;          // Maps label names to instruction indexes
 } Script;
 
+// free the resources used by the script
+void scriptDestroy(Script s);
+
 // Gets the index a label points to. Null if label does not exist
 int* scriptGetLabel(Script* s, const char* label);
 
