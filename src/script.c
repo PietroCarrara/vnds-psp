@@ -57,7 +57,8 @@ char *executeSetVariable(Script *s, Context *toSet, Context *c, Context *gc,
     }
   } else {
     char str[13];
-    int a = atoi(contextGetVariable(c, args->variable));
+    char *varValue = contextGetVariable(c, args->variable);
+    int a = varValue != NULL ? atoi(varValue) : 0;
     int b = atoi(value);
     int res = a;
 
@@ -82,9 +83,7 @@ char *executeIf(Script *s, Context *c, Context *gc, IfArgs *args) {
 
   char *left = contextGetVariableLocalOrGlobal(c, gc, args->variable);
   if (left == NULL) {
-    snprintf(error, sizeof(error), "Could not find variable \"%s\"",
-             args->variable);
-    return strdup(error);
+    left = "";
   }
 
   char *rightEval = evalString(args->right, c, gc);
