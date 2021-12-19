@@ -1,6 +1,8 @@
 #ifndef SCRIPT_H
 #define SCRIPT_H
 
+#include <stdio.h>
+
 #include "context.h"
 #include "instruction.h"
 #include "utils/ht.h"
@@ -20,5 +22,9 @@ int* scriptGetLabel(Script* s, const char* label);
 // was executed
 char* scriptExecuteNext(Script* script, Context* c, Context* gc,
                         Instruction* instr);
+
+// Reads and decodes a script. Returns a string describing any errors, NULL on
+// success
+char* readScript(FILE* f, Script* s);
 
 #endif

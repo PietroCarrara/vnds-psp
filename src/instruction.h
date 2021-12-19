@@ -7,6 +7,7 @@ typedef enum {
   InstructionSound,
   InstructionMusic,
   InstructionText,
+  InstructionClearText,
   InstructionChoice,
   InstructionSetVar,
   InstructionGSetVar,
@@ -22,7 +23,7 @@ typedef enum {
   ValueSum,
   ValueSub,
   ValueClear,
-} ValueOperator;
+} ValueOperation;
 
 typedef enum {
   TestEquals,
@@ -31,7 +32,7 @@ typedef enum {
   TestGreaterOrEquals,
   TestLess,
   TestLessOrEquals,
-} TestOperator;
+} TestOperation;
 
 typedef struct {
   // What instruction is this struct representing
@@ -64,17 +65,21 @@ typedef struct {
 } TextArgs;
 
 typedef struct {
+  int shouldClearHistory;
+} ClearTextArgs;
+
+typedef struct {
   char *choices;
 } ChoiceArgs;
 
 // Used for both setvar and gsetvar
 typedef struct {
   char *variable, *value;
-  ValueOperator operator;
+  ValueOperation operation;
 } SetVarArgs;
 
 typedef struct {
-  TestOperator operation;
+  TestOperation operation;
   char *variable, *right;
   int falseGoto;
 } IfArgs;
@@ -94,5 +99,7 @@ typedef struct {
 typedef struct {
   char *label;
 } GotoArgs;
+
+char *instructionToString(Instruction);
 
 #endif
