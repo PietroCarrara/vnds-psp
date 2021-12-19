@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "string.h"
 
@@ -19,6 +20,35 @@ char valueOperationToChar(ValueOperation op) {
       return '?';
   }
 }
+
+char **choiceGetOptions(ChoiceArgs *args, Context *c, Context *gc, int *len) {
+  int numChoices = 1;
+  char *choices = strdup(args->choices);
+  int strLen = strlen(choices);
+  int i;
+  for (i = 0; i < strLen; i++) {
+    // Make each '|' the end of a string
+    if (choices[i] == '|') {
+      numChoices++;
+      choices[i] = '\0';
+    }
+  }
+
+  char **res = malloc(sizeof(char *) * numChoices);
+  char *currChoice = choices;
+  for (i = 0; i < numChoices; i++) {
+    res[i] = evalString(currChoice, c, gc);
+    currChoice += strlen(currChoice) + 1;
+  }
+
+  if (len != NULL) {
+    *len = numChoices;
+  }
+
+  free(choices);
+  return res;
+}
+
 char *testOperationToString(TestOperation op) {
   switch (op) {
     case TestEquals:
@@ -61,7 +91,8 @@ char *instructionToString(Instruction i) {
       break;
     case InstructionSetIMG:
       setIMGArgs = i.args;
-      snprintf(buf, sizeof(buf), "setimg %s %d %d", setIMGArgs->filename, setIMGArgs->x, setIMGArgs->y);
+      snprintf(buf, sizeof(buf), "setimg %s %d %d", setIMGArgs->filename,
+               setIMGArgs->x, setIMGArgs->y);
       break;
     case InstructionSound:
       soundArgs = i.args;
@@ -91,7 +122,8 @@ char *instructionToString(Instruction i) {
       break;
     case InstructionJump:
       jumpArgs = i.args;
-      snprintf(buf, sizeof(buf), "jump %s %s", jumpArgs->filename, jumpArgs->label);
+      snprintf(buf, sizeof(buf), "jump %s %s", jumpArgs->filename,
+               jumpArgs->label);
       break;
     case InstructionClearText:
       clearTextArgs = i.args;
@@ -178,7 +210,7 @@ void instructionDestroy(Instruction i) {
       gotoArgs = i.args;
       free(gotoArgs->label);
       break;
-    // TODO: Random
+      // TODO: Random
   }
 
   free(i.args);

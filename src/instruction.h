@@ -1,6 +1,8 @@
 #ifndef INSTRUCTION_H
 #define INSTRUCTION_H
 
+#include "context.h"
+
 typedef enum {
   InstructionBGLoad,
   InstructionSetIMG,
@@ -104,5 +106,8 @@ char *instructionToString(Instruction);
 
 // Frees resources used by the instruction
 void instructionDestroy(Instruction);
+
+// Returns the options available to choose from in a choice instruction
+char **choiceGetOptions(ChoiceArgs *args, Context *c, Context *gc, int *len);
 
 #endif
