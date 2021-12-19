@@ -13,6 +13,9 @@ Context *makeContext();
 // Destroys a context
 void destroyContext(Context *c);
 
+// Wipes all variables inside a context
+void contextReset(Context *c);
+
 // Tries getting a variable. Returns NULL if the variable does not exist.
 char *contextGetVariable(Context *c, char *name);
 

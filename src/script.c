@@ -27,15 +27,20 @@ char *executeSetVariable(Script *s, Context *toSet, Context *c, Context *gc,
   char error[255] = {0};
   char *value = evalString(args->value, c, gc);
 
-  if (args->operator== ValueSet) {
+  if (args->operation == ValueSet) {
     if (!contextSetVariable(toSet, args->variable, value)) {
       snprintf(error, sizeof(error), "Could not set variable \"%s\" to \"%s\"",
                args->variable, value);
     }
-  } else if (args->operator== ValueClear) {
-    if (!contextSetVariable(toSet, args->variable, "0")) {
-      snprintf(error, sizeof(error), "Could not set variable \"%s\" to \"0\"",
-               args->variable);
+  } else if (args->operation == ValueClear) {
+    // setvar ~ ~, wipes all variables
+    if (strcmp(args->variable, "~") == 0) {
+      contextReset(toSet);
+    } else {
+      if (!contextSetVariable(toSet, args->variable, "0")) {
+        snprintf(error, sizeof(error), "Could not set variable \"%s\" to \"0\"",
+                 args->variable);
+      }
     }
   } else {
     char str[13];
@@ -43,7 +48,7 @@ char *executeSetVariable(Script *s, Context *toSet, Context *c, Context *gc,
     int b = atoi(value);
     int res = a;
 
-    if (args->operator== ValueSub) {
+    if (args->operation == ValueSub) {
       res = a - b;
     } else {
       res = a + b;
@@ -69,12 +74,23 @@ char *executeIf(Script *s, Context *c, Context *gc, IfArgs *args) {
     return strdup(error);
   }
 
-  char *right = evalString(args->right, c, gc);
+  char *rightEval = evalString(args->right, c, gc);
+  char *right = contextGetVariableLocalOrGlobal(c, gc, rightEval);
+  if (right == NULL) {
+    if (isNumber(rightEval)) {
+      right = strdup(rightEval);
+    } else {
+      snprintf(error, sizeof(error), "Could not find variable \"%s\"", rightEval);
+      free(rightEval);
+      return strdup(error);
+    }
+  }
+  free(rightEval);
 
   int res = 0;
   if (args->operation == TestEquals || args->operation == TestNotEquals) {
-    res = strcmp(left, right);
-    if (args->operation == TestEquals) {
+    res = strcmp(left, right) == 0;
+    if (args->operation == TestNotEquals) {
       res = !res;
     }
   } else {
@@ -114,6 +130,9 @@ char *executeRandom(Script *s, Context *c, Context *gc, RandomArgs *args) {
   int low = atoi(lowStr);
   int high = atoi(highStr);
 
+  free(lowStr);
+  free(highStr);
+
   int r = (rand() % (high - low + 1)) + low;
   char rStr[13];
   snprintf(rStr, sizeof(rStr), "%d", r);
@@ -131,6 +150,10 @@ int *scriptGetLabel(Script *s, const char *label) {
 char *scriptExecuteNext(Script *script, Context *c, Context *gc,
                         Instruction *instr) {
   char *error = NULL;
+  if (script->currentInstruction >= script->instructionsCount) {
+    return strdup("reached end of script");
+  }
+
   Instruction i = script->instructions[script->currentInstruction];
   script->currentInstruction++;
   if (instr != NULL) {

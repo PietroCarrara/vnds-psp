@@ -20,6 +20,15 @@ void destroyContext(Context *c) {
   free(c);
 }
 
+void contextReset(Context *c) {
+  HashTableIt it = HashTableIterator(c->hash);
+  while (HashTableNext(&it)) {
+    free(it.value);
+  }
+  HashTableDestroy(c->hash);
+  c->hash = HashTableCreate();
+}
+
 char *contextGetVariable(Context *c, char *name) {
   return (char *)HashTableGet(c->hash, name);
 }
