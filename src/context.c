@@ -39,11 +39,26 @@ int contextSetVariable(Context *c, char *name, char *value) {
     free(old);
   }
 
-  return HashTableSet(c->hash, name, strdup(value)) != NULL;
+  if (value != NULL) {
+    value = strdup(value);
+
+    // Trim "" if needed
+    int len = strlen(value);
+    if (len > 1 && value[0] == '"' && value[len - 1] == '"') {
+      int i;
+      for (i = 0; i < len - 2; i++) {
+        value[i] = value[i + 1];
+      }
+      value[len - 2] = '\0';
+      value = realloc(value, len - 2 + 1);
+    }
+  }
+
+  return HashTableSet(c->hash, name, value) != NULL;
 }
 
 char *contextGetVariableLocalOrGlobal(Context *c, Context *gc, char *name) {
-  char* res = contextGetVariable(c, name);
+  char *res = contextGetVariable(c, name);
   if (res == NULL) {
     res = contextGetVariable(gc, name);
   }

@@ -53,8 +53,8 @@ char *executeSetVariable(Script *s, Context *toSet, Context *c, Context *gc,
     if (strcmp(args->variable, "~") == 0) {
       contextReset(toSet);
     } else {
-      if (!contextSetVariable(toSet, args->variable, "")) {
-        snprintf(error, sizeof(error), "Could not set variable \"%s\" to \"\"",
+      if (!contextSetVariable(toSet, args->variable, NULL)) {
+        snprintf(error, sizeof(error), "Could not set variable \"%s\" to NULL",
                  args->variable);
       }
     }
