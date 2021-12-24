@@ -51,7 +51,6 @@ char *readScript(FILE *f, Script *s) {
   s->instructions = malloc(sizeof(Instruction) * allocated);
   s->labels = HashTableCreate();
 
-  // TODO: free
   IfArgs **ifStack = NULL;  // Array of IfArgs pointers
   int ifStackSize = 0;
 
@@ -142,7 +141,7 @@ char *readScript(FILE *f, Script *s) {
         args->operation = ValueClear;
       } else {
         char error[255];
-        snprintf(error, sizeof(error), "unknown operation: \"%s\"", op);
+        snprintf(error, sizeof(error), "%d unknown operation: \"%s\"", line, op);
         freeStack(ifStack, ifStackSize);
         free(word);
         free(op);
@@ -176,7 +175,7 @@ char *readScript(FILE *f, Script *s) {
         args->operation = TestGreaterOrEquals;
       } else {
         char error[255];
-        snprintf(error, sizeof(error), "unknown operation: \"%s\"", op);
+        snprintf(error, sizeof(error), "%d unknown operation: \"%s\"", line, op);
         freeStack(ifStack, ifStackSize);
         free(word);
         free(op);
@@ -255,7 +254,8 @@ char *readScript(FILE *f, Script *s) {
         skipLine(f);
       } else {
         char error[255];
-        snprintf(error, sizeof(error), "unexpected token: '%c'", c);
+        snprintf(error, sizeof(error), "%d unexpected token: '%c'", line, c);
+        freeStack(ifStack, ifStackSize);
         return strdup(error);
       }
     }
