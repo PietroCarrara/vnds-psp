@@ -42,7 +42,6 @@ char *evalString(char *str, Context *c, Context *gc) {
       char *val = contextGetVariableLocalOrGlobal(c, gc, varName);
       if (val != NULL) {
         // Write the variable value to the result
-        printf("VAL: %s\n", val);
         int valLen = strlen(val);
         int j;
         for (j = 0; j < valLen; j++) {
