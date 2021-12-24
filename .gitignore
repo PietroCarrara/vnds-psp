@@ -1,3 +1,5 @@
+src/fate/
+src/umineko/
 .vscode/
 *.o
 *.PBP

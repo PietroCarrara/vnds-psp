@@ -38,7 +38,10 @@ char *executeGoto(Script *s, Context *c, Context *gc, GotoArgs *args) {
 char *executeSetVariable(Script *s, Context *toSet, Context *c, Context *gc,
                          SetVarArgs *args) {
   char error[255] = {0};
-  char *value = evalString(args->value, c, gc);
+  char *value = contextGetVariableLocalOrGlobal(c, gc, args->value);
+  if (value == NULL) {
+    value = args->value;
+  }
 
   if (args->operation == ValueSet) {
     if (!contextSetVariable(toSet, args->variable, value)) {
@@ -50,8 +53,8 @@ char *executeSetVariable(Script *s, Context *toSet, Context *c, Context *gc,
     if (strcmp(args->variable, "~") == 0) {
       contextReset(toSet);
     } else {
-      if (!contextSetVariable(toSet, args->variable, "0")) {
-        snprintf(error, sizeof(error), "Could not set variable \"%s\" to \"0\"",
+      if (!contextSetVariable(toSet, args->variable, "")) {
+        snprintf(error, sizeof(error), "Could not set variable \"%s\" to \"\"",
                  args->variable);
       }
     }
@@ -74,7 +77,6 @@ char *executeSetVariable(Script *s, Context *toSet, Context *c, Context *gc,
     }
   }
 
-  free(value);
   return error[0] == '\0' ? NULL : strdup(error);
 }
 
