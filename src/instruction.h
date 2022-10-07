@@ -45,6 +45,7 @@ typedef struct {
 
 typedef struct {
   char *filename;
+  // Fadein in milliseconds
   int fadein;
 } BGLoadArgs;
 
@@ -71,7 +72,8 @@ typedef struct {
 } ClearTextArgs;
 
 typedef struct {
-  char *choices;
+  char **choices;
+  int len;
 } ChoiceArgs;
 
 // Used for both setvar and gsetvar
@@ -91,6 +93,7 @@ typedef struct {
 } JumpArgs;
 
 typedef struct {
+  // Delay in milliseconds
   int delay;
 } DelayArgs;
 
@@ -108,6 +111,6 @@ char *instructionToString(Instruction);
 void instructionDestroy(Instruction);
 
 // Returns the options available to choose from in a choice instruction
-char **choiceGetOptions(ChoiceArgs *args, Context *c, Context *gc, int *len);
+char **choiceGetOptions(char *list, int *len);
 
 #endif

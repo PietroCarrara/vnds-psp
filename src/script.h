@@ -28,6 +28,6 @@ char* scriptExecuteNext(Script* script, Context* c, Context* gc,
 
 // Reads and decodes a script. Returns a string describing any errors, NULL on
 // success
-char* readScript(FILE* f, Script* s);
+char* readScript(FILE* f, Script** out);
 
 #endif

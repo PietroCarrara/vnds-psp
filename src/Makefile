@@ -1,24 +1,34 @@
+PSPSDK = $(shell psp-config --pspsdk-path)
+PSPBIN = $(shell psp-config --psp-prefix)/bin
+
 TARGET = VNDS_PSP
-OBJS   = main.o context.o script.o string.o utils/callback.o utils/ht.o
+SDL_CONFIG = $(PSPBIN)/sdl2-config
 
-INCDIR   =
-CFLAGS   = -G0 -Wall -O2
-CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
-ASFLAGS  = $(CFLAGS)
+OBJS   = psp/main.o psp/engine.o psp/bgload.o psp/choice.o \
+				 instruction.o context.o script.o script_decode.o string.o \
+				 utils/callback.o utils/ht.o
 
-USE_PSPSDK_LIBC = 1
+INCDIR =
+CFLAGS = $(shell $(SDL_CONFIG) --cflags) -G0 -Wall -O2 -DPSP
+CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti -D"TIXML_USE_STL"
+ASFLAGS = $(CFLAGS)
 
-LIBDIR  =
+LIBDIR =
 LDFLAGS =
-LIBS    = -lm
+LIBS    = -lSDL2_gfx -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lfreetype -lpng -ljpeg \
+					-lpspvfpu -lpsphprm -lpspsdk -lpspctrl -lpspumd -lpsprtc -lpsppower -lpspgum \
+				  -lpspgu -lpspaudiolib -lpspaudio -lpsphttp -lpspssl -lpspwlan \
+          -lpspnet_adhocmatching -lpspnet_adhoc -lpspnet_adhocctl -lm -lpspvram \
+          -lSDL2 -lGL -lGLU -lz \
+					$(shell $(SDL_CONFIG) --libs)
 
 BUILD_PRX = 1
 
-EXTRA_TARGETS    = EBOOT.PBP
-PSP_EBOOT_TITLE  = VNDS PSP
-# PSP_EBOOT_ICON  = ICON0.png
-# PSP_EBOOT_PIC1  = PIC1.png
-# PSP_EBOOT_SND0  = SND0.at3
+EXTRA_TARGETS = EBOOT.PBP
+PSP_EBOOT_TITLE = VNDS PSP
+# PSP_EBOOT_ICON= "ICON0.png"
+# PSP_EBOOT_PIC1= "PIC1.png"
+# PSP_EBOOT_SND0= "SND0.at3"
 
-PSPSDK=$(shell psp-config --pspsdk-path)
+USE_PSPSDK_LIBC=1
 include $(PSPSDK)/lib/build.mak

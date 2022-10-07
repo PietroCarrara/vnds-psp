@@ -6,6 +6,8 @@
 #include "string.h"
 #include "utils/ht.h"
 
+#define FRAMES2MILLIS(x) (x*1000/60)
+
 char *nextWord(FILE *f);
 char *readLine(FILE *f);
 void skipSpaces(FILE *f);
@@ -43,9 +45,11 @@ void removeBOM(FILE *f) {
   ungetc(a, f);
 }
 
-char *readScript(FILE *f, Script *s) {
+char *readScript(FILE *f, Script **out) {
   int line = 1;
   int allocated = 64;
+  Script *s = malloc(sizeof(Script));
+  *out = s;
   s->currentInstruction = 0;
   s->instructionsCount = 0;
   s->instructions = malloc(sizeof(Instruction) * allocated);
@@ -71,9 +75,9 @@ char *readScript(FILE *f, Script *s) {
 
       char *fadeStr = nextWord(f);
       if (fadeStr[0] == '\0') {
-        args->fadein = 16;  // Default value when fade is ommited
+        args->fadein = FRAMES2MILLIS(16);  // Default value when fade is ommited
       } else {
-        args->fadein = atoi(fadeStr);
+        args->fadein = FRAMES2MILLIS(atoi(fadeStr));
       }
       free(fadeStr);
 
@@ -123,9 +127,11 @@ char *readScript(FILE *f, Script *s) {
       instr.type = InstructionClearText;
     } else if (strcmp(word, "choice") == 0) {
       ChoiceArgs *args = malloc(sizeof(ChoiceArgs));
-      args->choices = readLine(f);
+      char *list = readLine(f);
+      args->choices = choiceGetOptions(list, &args->len);
       instr.type = InstructionChoice;
       instr.args = args;
+      free(list);
     } else if (strcmp(word, "setvar") == 0 || strcmp(word, "gsetvar") == 0) {
       SetVarArgs *args = malloc(sizeof(SetVarArgs));
       args->variable = nextWord(f);
@@ -208,7 +214,7 @@ char *readScript(FILE *f, Script *s) {
     } else if (strcmp(word, "delay") == 0) {
       DelayArgs *args = malloc(sizeof(args));
       char *delayStr = nextWord(f);
-      args->delay = atoi(delayStr);
+      args->delay = FRAMES2MILLIS(atoi(delayStr));
       free(delayStr);
       instr.args = args;
       instr.type = InstructionDelay;

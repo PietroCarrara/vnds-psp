@@ -21,9 +21,9 @@ char valueOperationToChar(ValueOperation op) {
   }
 }
 
-char **choiceGetOptions(ChoiceArgs *args, Context *c, Context *gc, int *len) {
+char **choiceGetOptions(char *list, int *len) {
   int numChoices = 1;
-  char *choices = strdup(args->choices);
+  char *choices = strdup(list);
   int strLen = strlen(choices);
   int i;
   for (i = 0; i < strLen; i++) {
@@ -37,7 +37,7 @@ char **choiceGetOptions(ChoiceArgs *args, Context *c, Context *gc, int *len) {
   char **res = malloc(sizeof(char *) * numChoices);
   char *currChoice = choices;
   for (i = 0; i < numChoices; i++) {
-    res[i] = evalString(currChoice, c, gc);
+    res[i] = strdup(currChoice);
     currChoice += strlen(currChoice) + 1;
   }
 
@@ -135,8 +135,9 @@ char *instructionToString(Instruction i) {
       snprintf(buf, sizeof(buf), "delay %d", delayArgs->delay);
       break;
     case InstructionChoice:
+      // TODO: Print all choices
       choiceArgs = i.args;
-      snprintf(buf, sizeof(buf), "choice %s", choiceArgs->choices);
+      snprintf(buf, sizeof(buf), "choice ...");
       break;
     case InstructionGoto:
       gotoArgs = i.args;
